@@ -47,6 +47,7 @@ import {
   UseSortByColumnProps,
   UseSortByOptions,
   UseTableHooks,
+  UseTableOptions,
 } from 'react-table';
 import { CarbonIconType } from '@carbon/react/icons';
 import { IconButton, type ButtonProps } from '@carbon/react';
@@ -208,6 +209,7 @@ interface DataGridTableState
 
 export interface DataGridTableInstance<T extends object = any>
   extends Omit<TableInstance<T>, 'state'>,
+    Omit<UseTableOptions<T>, 'columns'>,
     Partial<UsePaginationInstanceProps<any>> {
   shouldDisableSelectRow?: (...args) => void | boolean;
   state?: Partial<TableState & UseRowSelectState<any>>;
@@ -218,6 +220,8 @@ export interface DataGridTableInstance<T extends object = any>
     };
   };
   withSelectRows?: boolean;
+  isFetching?: boolean;
+  skeletonRowCount?: number;
 }
 
 export interface RowAction {
@@ -233,7 +237,10 @@ export interface RowAction {
 export interface DataGridState<T extends object = any>
   extends TableCommonProps,
     UsePaginationInstanceProps<T>,
-    Omit<TableInstance<T>, 'state' | 'headers' | 'rows' | 'columns'>,
+    Omit<
+      TableInstance<T>,
+      'state' | 'headers' | 'rows' | 'columns' | 'initialState'
+    >,
     Omit<UseFiltersInstanceProps<T>, 'rows'>,
     UseRowSelectInstanceProps<T>,
     Pick<UseRowSelectInstanceProps<T>, 'toggleAllRowsSelected'> {
@@ -332,6 +339,11 @@ export interface DataGridState<T extends object = any>
     event: React.MouseEvent<HTMLElement>
   ) => void;
   ExpandedRowContentComponent?: JSXElementConstructor<any>;
+  skeletonRowCount?: number;
+  initialState?: {
+    globalFilter?: string;
+  };
+  withSelectRows?: boolean;
 }
 
 export interface DataGridData {
