@@ -21,7 +21,7 @@
 }
 
 .#{variables.$block-class}__actions-column-loading {
-  margin-bottom: $spacing-03;
+  margin-block-end: $spacing-03;
 }
 
 .#{variables.$block-class}
@@ -35,4 +35,8 @@
 
 .#{variables.$block-class} .#{variables.$block-class}__disabled-row-action svg {
   fill: theme.$layer-selected-disabled;
+}
+
+.#{variables.$block-class}_actions-column {
+  display: flex;
 }
