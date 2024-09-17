@@ -15,7 +15,6 @@ import {
   NUMBER,
   PANEL,
   RADIO,
-  SAVED_FILTERS,
 } from '../constants';
 import {
   Checkbox,
@@ -58,17 +57,13 @@ const useFilters = ({
   autoHideFilters,
   isFetching,
 }) => {
-  const {
-    state,
-    dispatch: localDispatch,
-    tableId: contextTableId,
-  } = useContext(FilterContext);
-  const { savedFilters } = state;
+  const { tableId: contextTableId } = useContext(FilterContext);
   /** State */
   const [filtersState, setFiltersState] = useState(
     getInitialStateFromFilters(filters, variation, reactTableFiltersState)
   );
   const [fetchingReset, setFetchingReset] = useState(false);
+  const [localFilterState, setLocalFilterState] = useState([]);
 
   const [filtersObjectArray, setFiltersObjectArray] = useState(
     reactTableFiltersState
@@ -93,6 +88,7 @@ const useFilters = ({
     setFiltersState(JSON.parse(prevFiltersRef.current));
     setFiltersObjectArray(JSON.parse(prevFiltersObjectArrayRef.current));
     setAllFilters(JSON.parse(lastAppliedFilters.current));
+    setLocalFilterState(JSON.parse(lastAppliedFilters.current));
 
     // Set the temp prev refs, these will be used to populate the prev values once the
     // panel opens again
@@ -125,6 +121,7 @@ const useFilters = ({
         setFiltersState(initialFiltersState);
         setFiltersObjectArray(initialFiltersObjectArray);
         setAllFilters([]);
+        setLocalFilterState([]);
 
         // Update their respective refs so everything is in sync
         prevFiltersRef.current = JSON.stringify(initialFiltersState);
@@ -170,15 +167,10 @@ const useFilters = ({
 
     setFiltersObjectArray(filterCopy);
 
-    // Dispatch action from local filter context to track filters in order
+    // Set filterCopy to localFilterState to track filters in order
     // to keep history if `isFetching` becomes true. If so, react-table
     // clears all filter history
-    localDispatch({
-      type: SAVED_FILTERS,
-      payload: {
-        savedFilters: filterCopy,
-      },
-    });
+    setLocalFilterState(filterCopy);
 
     if (updateMethod === INSTANT) {
       setAllFilters(filterCopy);
@@ -510,7 +502,7 @@ const useFilters = ({
     if (isFetching && fetchingReset) {
       const cleanFilters = (originalFilterState) => {
         const copy = { ...originalFilterState };
-        const updatedFilters = savedFilters.map((f) => {
+        const updatedFilters = localFilterState.map((f) => {
           if (Object.hasOwn(copy, f.id)) {
             copy[f.id] = f;
             return copy;
@@ -519,8 +511,8 @@ const useFilters = ({
         });
         return updatedFilters[0];
       };
-      if (savedFilters && savedFilters.length) {
-        setFiltersObjectArray(savedFilters);
+      if (localFilterState && localFilterState.length) {
+        setFiltersObjectArray(localFilterState);
         const filterStateCopy = cleanFilters(filtersState) ?? [];
         setFiltersState(filterStateCopy);
       }
@@ -534,7 +526,7 @@ const useFilters = ({
     reactTableFiltersState,
     setAllFilters,
     fetchingReset,
-    savedFilters,
+    localFilterState,
     filtersObjectArray,
   ]);
 
